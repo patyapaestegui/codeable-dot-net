@@ -1,0 +1,6 @@
+@CachedInventory_HostAddress = http://localhost:5250
+
+GET {{CachedInventory_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
