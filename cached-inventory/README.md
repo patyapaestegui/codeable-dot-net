@@ -2,12 +2,13 @@
 En este ejercicio, nos encontramos con una API que conecta a un servicio antiguo de control de inventario.
 Este servicio no está pensado para integrar con facilidad, y tiene unos problemas de rendimiento importantes que no se pueden evitar directamente.
 
-Actualmente presenta un rendimiento muy pobre, y tiene serios problemas para manejar solicitudes concurrentes, si se ejecuta el proyecto WarehouseStockSystemClient mientras la API está siendo ejecutada, se puede comprobar que incluso con dos solicitudes en paralelo, el stock no se retira correctamente, dando resultados inválidos.
+Actualmente presenta un rendimiento muy pobre, y tiene serios problemas para manejar solicitudes concurrentes, si se ejecuta el proyecto de test, se puede comprobar que incluso con dos solicitudes en paralelo, el stock no se retira correctamente, dando resultados inválidos.
 
 ## Limitaciones
 - El servicio WarehouseService no puede ser modificado, es el servicio que simula la lentitud del servicio con el que estamos integrando.
-- El proyecto WarehouseStockSystemClient tampoco se puede modificar, es el servicio que comprueba que los cambios realizados cumplen el objetivo.
-- No se puede modificar el punto de acceso `verify-from-file`, es utilizado por WarehouseStockSystemClient para verificar que el fichero de stock del servicio de inventario se ha actualizado correctamente.
+- El proyecto de test no se puede modificar.
+- No se puede modificar el punto de acceso `verify-from-file`, es utilizado por el proyecto de test para verificar que el fichero de stock del servicio de inventario se ha actualizado correctamente.
+- Evidentemente, los otros dos puntos sí se pueden modificar internamente, pero hay que mantener las rutas, los tests deben ejecutarse sin modificaciones.
 
 ## Objetivos
 ### Rendimiento
