@@ -17,13 +17,6 @@ public interface IWarehouseStockSystemClient
   /// <param name="productId">El identificador del producto a actualizar.</param>
   /// <param name="newAmount">La cantidad de producto a asignar.</param>
   Task UpdateStock(int productId, int newAmount);
-
-  /// <summary>
-  ///   NO USAR, Simula comprobar el fichero directamente, se usa para testear.
-  /// </summary>
-  /// <param name="productId">El identificador del producto.</param>
-  /// <returns>El stock de dicho producto.</returns>
-  Task<int> GetStockDirectlyFromFile(int productId);
 }
 
 /// <summary>
@@ -40,7 +33,6 @@ public interface IWarehouseStockSystemClient
 public class WarehouseStockSystemClient : IWarehouseStockSystemClient
 {
   private const string LegacyFileStorageTemplate = "stock-{id}.json";
-  private static readonly string LegacyFileStorage = Environment.GetEnvironmentVariable("LEGACY_FILE_STORAGE") ?? "./";
 
   /// <summary>
   ///   Obtiene el stock de un producto.
@@ -60,9 +52,6 @@ public class WarehouseStockSystemClient : IWarehouseStockSystemClient
     }
   }
 
-  public async Task<int> GetStockDirectlyFromFile(int productId) =>
-    JsonSerializer.Deserialize<LegacyStock>(await File.ReadAllTextAsync(GetFileName(productId)))!.Amount;
-
   /// <summary>
   ///   Actualiza el stock de un producto.
   /// </summary>
@@ -75,12 +64,15 @@ public class WarehouseStockSystemClient : IWarehouseStockSystemClient
     await File.WriteAllTextAsync(GetFileName(productId), JsonSerializer.Serialize(stock));
   }
 
-  private static string GetFileName(int productId) => Path.Combine(
-    LegacyFileStorage,
+  public static async Task<int> GetStockDirectlyFromFile(int productId) =>
+    JsonSerializer.Deserialize<LegacyStock>(await File.ReadAllTextAsync(GetFileName(productId)))!.Amount;
+
+  public static string GetFileName(int productId) => Path.Combine(
+    "./",
     LegacyFileStorageTemplate.Replace("{id}", productId.ToString()));
 
   // Este retraso simula la latencia del sistema antiguo..
   private static async Task WaitForDatabase() => await Task.Delay(2_500);
 
-  private record LegacyStock(int ProductId, int Amount);
+  public record LegacyStock(int ProductId, int Amount);
 }

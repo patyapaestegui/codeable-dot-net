@@ -7,9 +7,8 @@ Actualmente presenta un rendimiento muy pobre, y tiene serios problemas para man
 ## Limitaciones
 - El servicio WarehouseService no puede ser modificado, es el servicio que simula la lentitud del servicio con el que estamos integrando.
 - El proyecto de test no se puede modificar.
-- No se puede modificar el punto de acceso `verify-from-file`, es utilizado por el proyecto de test para verificar que el fichero de stock del servicio de inventario se ha actualizado correctamente.
 - Tocar los ficheros `json` tampoco está permitido, son los ficheros que simulan el stock de la base de datos servicio de inventario.
-- Evidentemente, los otros dos puntos sí se pueden modificar internamente, pero hay que mantener las rutas, los tests deben ejecutarse sin modificaciones.
+- Se puede modificar la implementación de los puntos de entrada de la API, pero no la ruta ni los tipos de los valores que retornan.
 
 ## Objetivos
 ### Rendimiento

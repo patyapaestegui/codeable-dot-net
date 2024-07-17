@@ -59,11 +59,6 @@ public static class CachedInventoryApiBuilder
       .WithName("Restock")
       .WithOpenApi();
 
-    app.MapGet(
-      "/stock/verify-from-file/{productId:int}",
-      async ([FromServices] IWarehouseStockSystemClient client, int productId) =>
-      await client.GetStockDirectlyFromFile(productId));
-
     return app;
   }
 }

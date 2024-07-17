@@ -9,7 +9,7 @@ public record TestSetup(string Url) : IAsyncDisposable
 {
   private static readonly SemaphoreSlim PortSemaphore = new(1);
   private static readonly Random Random = new();
-  private static readonly HttpClient client = new();
+  private static readonly HttpClient Client = new();
   private readonly List<long> requestDurations = [];
 
   public long AverageRequestDuration => Convert.ToInt64(requestDurations.Average());
@@ -24,9 +24,7 @@ public record TestSetup(string Url) : IAsyncDisposable
   {
     // Tiempo de latencia permitido para actualizar el fichero.
     await Task.Delay(5_500);
-    var response = await client.GetAsync($"{Url}stock/verify-from-file/{productId}");
-    var content = await response.Content.ReadAsStringAsync();
-    var fileStock = int.Parse(content);
+    var fileStock = await WarehouseStockSystemClient.GetStockDirectlyFromFile(productId);
     Assert.True(
       fileStock == expectedStock,
       $"El fichero no se actualizó correctamente. Stock en el fichero: {fileStock}. Stock esperado: {expectedStock}.");
@@ -35,7 +33,7 @@ public record TestSetup(string Url) : IAsyncDisposable
   public async Task<int> GetStock(int productId)
   {
     var stopwatch = Stopwatch.StartNew();
-    var response = await client.GetAsync($"{Url}stock/{productId}");
+    var response = await Client.GetAsync($"{Url}stock/{productId}");
     var content = await response.Content.ReadAsStringAsync();
     stopwatch.Stop();
     requestDurations.Add(stopwatch.ElapsedMilliseconds);
@@ -56,7 +54,7 @@ public record TestSetup(string Url) : IAsyncDisposable
         var restockRequestContent = new StringContent(restockRequestJson);
         restockRequestContent.Headers.ContentType = new("application/json");
         var stopwatch = Stopwatch.StartNew();
-        var response = await client.PostAsync($"{Url}stock/restock", restockRequestContent);
+        var response = await Client.PostAsync($"{Url}stock/restock", restockRequestContent);
         stopwatch.Stop();
         requestDurations.Add(stopwatch.ElapsedMilliseconds);
         Assert.True(response.IsSuccessStatusCode, $"Error al reponer el stock del producto {productId}.");
@@ -75,7 +73,7 @@ public record TestSetup(string Url) : IAsyncDisposable
     var retrieveRequestContent = new StringContent(retrieveRequestJson);
     retrieveRequestContent.Headers.ContentType = new("application/json");
     var stopwatch = Stopwatch.StartNew();
-    var response = await client.PostAsync($"{Url}stock/retrieve", retrieveRequestContent);
+    var response = await Client.PostAsync($"{Url}stock/retrieve", retrieveRequestContent);
     stopwatch.Stop();
     requestDurations.Add(stopwatch.ElapsedMilliseconds);
     Assert.True(response.IsSuccessStatusCode, $"Error al retirar el stock del producto {productId}.");
