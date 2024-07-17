@@ -16,7 +16,7 @@ Introducir algún tipo de almacenamiento intermedio que permita mejorar el rendi
 ### Concurrencia
 Intentar retirar stock del mismo producto en paralelo y de forma concurrente debería funcionar correctamente. Actualmente, si se retiran cinco productos en paralelo, el stock se reduce solamente acorde con una de las solicitudes.
 ### Consistencia
-El sistema antiguo se sigue utilizando, como mucho, tres segundos después de que se haya actualizado el stock en la API, el sistema antiguo debería reflejar el cambio (el proyecto WarehouseStockSystemClient se encarga de comprobar esto).
+El sistema antiguo se sigue utilizando, como mucho, **cinco segundos y medio** después de que se haya actualizado el stock en la API, el sistema antiguo debería reflejar el cambio (el proyecto de test se encarga de comprobar esto).
 
 ## Recursos
 Absolutamente todo lo que deseen, ChatGPT, llamar a un primo que sabe de esto, trabajar en grupo o individualmente, preguntarme a mí... ¡Lo que sea! Solamente recuerda que lo valioso del ejercicio es el aprendizaje, y que tendremos una charla para que me expliques qué has hecho y por qué.
