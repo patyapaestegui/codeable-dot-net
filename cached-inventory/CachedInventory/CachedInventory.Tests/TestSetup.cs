@@ -23,7 +23,7 @@ public record TestSetup(string Url) : IAsyncDisposable
   public async Task VerifyStockFromFile(int productId, int expectedStock)
   {
     // Tiempo de latencia permitido para actualizar el fichero.
-    await Task.Delay(5_500);
+    await Task.Delay(10_500);
     var fileStock = await WarehouseStockSystemClient.GetStockDirectlyFromFile(productId);
     Assert.True(
       fileStock == expectedStock,

@@ -54,9 +54,9 @@ internal static class TestApiPerformance
     await Task.WhenAll(tasks);
     var finalStock = await setup.GetStock(productId);
     Assert.True(finalStock == 0, $"El stock final no es 0, sino {finalStock}.");
-    await setup.VerifyStockFromFile(productId, 0);
     Assert.True(
       setup.AverageRequestDuration < expectedPerformance,
       $"Duración promedio: {setup.AverageRequestDuration}ms, se esperaba un máximo de {expectedPerformance}ms.");
+    await setup.VerifyStockFromFile(productId, 0);
   }
 }
