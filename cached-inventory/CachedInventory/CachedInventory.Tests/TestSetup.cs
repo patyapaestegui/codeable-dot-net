@@ -30,20 +30,23 @@ public record TestSetup(string Url) : IAsyncDisposable
       $"El fichero no se actualizó correctamente. Stock en el fichero: {fileStock}. Stock esperado: {expectedStock}.");
   }
 
-  public async Task<int> GetStock(int productId)
+  public async Task<int> GetStock(int productId, bool isFirst = false)
   {
     var stopwatch = Stopwatch.StartNew();
     var response = await Client.GetAsync($"{Url}stock/{productId}");
     var content = await response.Content.ReadAsStringAsync();
     stopwatch.Stop();
-    requestDurations.Add(stopwatch.ElapsedMilliseconds);
+    if (!isFirst)
+    {
+      requestDurations.Add(stopwatch.ElapsedMilliseconds);
+    }
     Assert.True(response.IsSuccessStatusCode, $"Error al obtener el stock del producto {productId}.");
     return int.Parse(content);
   }
 
   public async Task Restock(int productId, int totalToRetrieve)
   {
-    var currentStock = await GetStock(productId);
+    var currentStock = await GetStock(productId, true);
     var missingStock = totalToRetrieve - currentStock;
     switch (missingStock)
     {
