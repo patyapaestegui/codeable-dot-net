@@ -13,6 +13,7 @@ public static class CachedInventoryApiBuilder
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
     builder.Services.AddScoped<IWarehouseStockSystemClient, WarehouseStockSystemClient>();
+    builder.Services.AddSingleton<Cache>();
 
     var app = builder.Build();
 
@@ -27,35 +28,56 @@ public static class CachedInventoryApiBuilder
 
     app.MapGet(
         "/stock/{productId:int}",
-        async ([FromServices] IWarehouseStockSystemClient client, int productId) => await client.GetStock(productId))
+        async ([FromServices] Cache cache, int productId) =>
+                {
+                  var productos = cache.ObtenerProductos();
+                  var producto = productos.FirstOrDefault(p => p.ProductId == productId);
+                  return producto != null ? Results.Ok(producto.Cantidad) : Results.NotFound();
+                })
       .WithName("GetStock")
       .WithOpenApi();
 
     app.MapPost(
         "/stock/retrieve",
-        async ([FromServices] IWarehouseStockSystemClient client, [FromBody] RetrieveStockRequest req) =>
-        {
-          var stock = await client.GetStock(req.ProductId);
-          if (stock < req.Amount)
-          {
-            return Results.BadRequest("Not enough stock.");
-          }
+        async ([FromServices] Cache cache, [FromBody] RetrieveStockRequest req) =>
+                {
+                  var actualizado = await cache.ActualizarStock(req.ProductId, req.Amount);
+                  if (!actualizado)
+                  {
+                    await cache.RefrescarCache();
+                    actualizado = await cache.ActualizarStock(req.ProductId, req.Amount);
+                    if (!actualizado)
+                    {
+                      return Results.BadRequest("Not enough stock.");
+                    }
+                  }
 
-          await client.UpdateStock(req.ProductId, stock - req.Amount);
-          return Results.Ok();
-        })
+                  await cache.SincronizarConSistemaAntiguoAsync();
+                  return Results.Ok();
+                })
       .WithName("RetrieveStock")
       .WithOpenApi();
 
 
     app.MapPost(
         "/stock/restock",
-        async ([FromServices] IWarehouseStockSystemClient client, [FromBody] RestockRequest req) =>
-        {
-          var stock = await client.GetStock(req.ProductId);
-          await client.UpdateStock(req.ProductId, req.Amount + stock);
-          return Results.Ok();
-        })
+         async ([FromServices] Cache cache, [FromBody] RestockRequest req) =>
+                {
+                  var productos = cache.ObtenerProductos();
+                  var producto = productos.FirstOrDefault(p => p.ProductId == req.ProductId);
+
+                  if (producto != null)
+                  {
+                    producto.Cantidad += req.Amount;
+                  }
+                  else
+                  {
+                    productos.Add(new Producto { ProductId = req.ProductId, Nombre = "", Cantidad = req.Amount });
+                  }
+
+                  await cache.SincronizarConSistemaAntiguoAsync();
+                  return Results.Ok();
+                })
       .WithName("Restock")
       .WithOpenApi();
 
